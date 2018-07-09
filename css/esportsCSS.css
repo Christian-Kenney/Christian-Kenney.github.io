@@ -1,0 +1,33 @@
+h4{
+    /*float: left;*/
+    /*text-align: left;*/
+}
+body{
+    height: 3000px;
+}
+#esportsDiv{
+    /*text-align: left;*/
+    /*position: absolute;*/
+}
+.educationEsports{
+    /*text-align: left;*/
+    /*font-size: 10px;*/
+    /*float: left;*/
+    /*display: flow;*/
+    position: relative;
+}
+#UTSAPhoto{
+    /*float: left;*/
+}
+.resumePhoto{
+    width: 70px;
+    height: 70px;
+}
+#codePhoto{
+    width: 90px;
+}
+
+.employer{
+    /*font-weight: bold;*/
+    /*font-size: 15px;*/
+}
