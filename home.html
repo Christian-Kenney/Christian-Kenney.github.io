@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Revenue Calculator</title>
+  <style>
+    /* Full-page gradient background */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fbc2eb, #a6c1ee);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: #fff;
+      font: black;
+    }
+
+    /* Container card with no white */
+    .calculator {
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
+      padding: 40px;
+      border-radius: 25px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      width: 380px;
+      text-align: center;
+      font: black;
+    }
+
+    h1 {
+      font-size: 30px;
+      margin-bottom: 30px;
+      background: linear-gradient(90deg, #f7971e, #ffd200);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font: black;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-top: 15px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      border: none;
+      border-radius: 15px;
+      font-size: 16px;
+      background: linear-gradient(90deg, #ff758c, #ff7eb9);
+      color: #fff;
+      font-weight: bold;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      transition: transform 0.2s, box-shadow 0.3s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      transform: scale(1.02);
+      box-shadow: 0 6px 10px rgba(0,0,0,0.4);
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 25px;
+      font-size: 16px;
+      font-weight: 700;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      background: linear-gradient(90deg, #f7971e, #ffd200);
+      color: #6a11cb;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      transition: transform 0.2s, box-shadow 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    }
+
+    #result {
+      margin-top: 25px;
+    }
+
+    .line {
+      padding: 14px;
+      border-radius: 15px;
+      margin-bottom: 12px;
+      font-weight: 700;
+      font-size: 16px;
+      text-align: center;
+      color: #fff;
+    }
+
+    select option {
+  background: #6a11cb; /* solid color */
+  color: #fff; /* text color */
+}
+    .positive {
+      background: linear-gradient(90deg, #19692c, #396339);
+    }
+
+    .negative {
+      background: linear-gradient(90deg, #dc3545, #ff6f61);
+    }
+
+    /* Smaller description under each line */
+    .desc {
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: #fff;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <h1>Revenue Calculator</h1>
+
+    <label for="costPrice">Price Paid ($):</label>
+    <input type="number" id="costPrice" step="0.01">
+
+    <label for="sellPrice">Price Sold ($):</label>
+    <input type="number" id="sellPrice" step="0.01">
+
+    <label for="shippingSize">Shipping Size:</label>
+    <select id="shippingSize">
+      <option value="5">Small ($5)</option>
+      <option value="10">Medium ($10)</option>
+      <option value="15">Large ($15)</option>
+    </select>
+
+    <button onclick="calculateRevenue()">Calculate</button>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    function calculateRevenue() {
+      const costPrice = parseFloat(document.getElementById('costPrice').value) || 0;
+      const sellPriceInput = document.getElementById('sellPrice').value;
+      const shippingCost = parseFloat(document.getElementById('shippingSize').value);
+      const resultDiv = document.getElementById('result');
+
+      function formatValue(value, description) {
+        const cls = value >= 0 ? 'positive' : 'negative';
+        return `<div class="line ${cls}">${value.toFixed(2)}<div class="desc">${description}</div></div>`;
+      }
+
+      if (sellPriceInput) {
+        const sellPrice = parseFloat(sellPriceInput);
+
+        let ebayFee = sellPrice * 0.135;
+        let tcgFee = sellPrice * 0.125;
+        if(tcgFee > 50){
+          tcgFee = 50;
+        }
+        const localRevenue = sellPrice - costPrice - shippingCost;
+        const ebayRevenue = sellPrice - costPrice - shippingCost - ebayFee;
+        const tcgRevenue = sellPrice - costPrice - shippingCost - tcgFee;
+
+        
+
+        resultDiv.innerHTML = `
+          ${formatValue(localRevenue, 'Local Revenue')}
+          ${formatValue(ebayRevenue, 'eBay Revenue (after 13.5% fee), ebay fee: ', ebayFee)}
+          ${formatValue(tcgRevenue, 'TCGPlayer Revenue (after 12.5% fee), tcg fee: ', tcgFee)}
+        `;
+      } else {
+        const baseCost = costPrice + shippingCost;
+
+        const localMin = baseCost;
+        const ebayMin = baseCost / (1 - 0.135);
+        const tcgMin = baseCost / (1 - 0.12);
+
+        resultDiv.innerHTML = `
+          ${formatValue(localMin, 'Minimum Sell Price (Local break-even)')}
+          ${formatValue(ebayMin, 'Minimum Sell Price (eBay break-even)')}
+          ${formatValue(tcgMin, 'Minimum Sell Price (TCGPlayer break-even)')}
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
