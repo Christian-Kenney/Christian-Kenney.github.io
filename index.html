@@ -140,8 +140,83 @@
     <div id="result"></div>
   </div>
 
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://apis.google.com/js/client.js"></script>
+
+  <script>
+  // Your spreadsheet ID (from the URL of your Google Sheet)
+  const SPREADSHEET_ID = "1Y8otZsOYRt3esZUGwIhEPmhy_-OtQukLJlrT2SleDi0";
+  const SHEET_ID = "1Y8otZsOYRt3esZUGwIhEPmhy_-OtQukLJlrT2SleDi0";
+  // The sheet name (tab name in Google Sheets)
+  const SHEET_NAME = "Sheet1";
+  const API_KEY = "AIzaSyARKfcIFXIqzospYH_ZKFd3WoezPq7d0BM";
+
+  // Load and init client
+  function initClient() {
+    gapi.client.init({
+      apiKey: "AIzaSyARKfcIFXIqzospYH_ZKFd3WoezPq7d0BM", // from Google Cloud Console
+      discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"]
+    }).then(() => {
+      console.log("Google Sheets API loaded.");
+    });
+  }
+
+  gapi.load("client", initClient);
+
+  function readFromSheet() {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(SHEET_NAME)}?key=${API_KEY}`;
+
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      if (data.values) {
+        console.log("📊 Data from Google Sheets:");
+        console.table("HERERE: ", data.values); // pretty print in console
+      } else {
+        console.error("⚠️ No data returned:", data);
+      }
+    })
+    .catch(error => {
+      console.error("❌ Error reading from Google Sheets:", error);
+    });
+}
+  // Function to write result to Google Sheets
+  function writeToSheet(cost, sell, shipping, revenue) {
+    gapi.client.sheets.spreadsheets.values.append({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${SHEET_NAME}`,
+      valueInputOption: "RAW",
+      insertDataOption: "INSERT_ROWS",
+      resource: {
+        values: [[cost, sell, shipping, revenue]]
+      }
+    }).then((response) => {
+      console.log("Data saved:", response);
+    }, (error) => {
+      console.error("Error saving to Google Sheets:", error);
+    });
+  }
+
+  // Example: Hook into your calculator
+  function calculateRevenue() {
+    readFromSheet();
+    const costPrice = parseFloat(document.getElementById('costPrice').value) || 0;
+    const sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+    const shippingCost = parseFloat(document.getElementById('shippingSize').value);
+
+    const revenue = sellPrice - costPrice - shippingCost;
+
+    document.getElementById('result').innerHTML =
+      `<div class="line positive">${revenue.toFixed(2)}<div class="desc">Net Revenue</div></div>`;
+
+    // Save values to Google Sheets
+    writeToSheet(costPrice, sellPrice, shippingCost, revenue.toFixed(2));
+  }
+</script>
+
   <script>
     function calculateRevenue() {
+      readFromSheet();
       const costPrice = parseFloat(document.getElementById('costPrice').value) || 0;
       const sellPriceInput = document.getElementById('sellPrice').value;
       const shippingCost = parseFloat(document.getElementById('shippingSize').value);
@@ -160,7 +235,7 @@
         if(tcgFee > 50){
           tcgFee = 50;
         }
-        const localRevenue = sellPrice - costPrice - shippingCost;
+        const localRevenue = sellPrice - costPrice;
         const ebayRevenue = sellPrice - costPrice - shippingCost - ebayFee;
         const tcgRevenue = sellPrice - costPrice - shippingCost - tcgFee;
 
@@ -174,7 +249,7 @@
       } else {
         const baseCost = costPrice + shippingCost;
 
-        const localMin = baseCost;
+        const localMin = costPrice;
         const ebayMin = baseCost / (1 - 0.135);
         const tcgMin = baseCost / (1 - 0.12);
 
